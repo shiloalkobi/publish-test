@@ -1,1 +1,1 @@
-export default function Page(){return <main style={{padding:24}}><h1>Hello from d8e0b750-65e8-49a7-9ead-bc26b51b0287</h1></main>}
+export default function Page(){return <main style={{padding:24}}><h1>App</h1></main>}
