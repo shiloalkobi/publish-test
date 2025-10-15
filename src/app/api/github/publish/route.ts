@@ -1,3 +1,4 @@
+// src/app/api/github/publish/route.ts
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
@@ -8,6 +9,157 @@ import { prisma } from "@/lib/db";
 /** JSON helper */
 function json(data: any, status = 200) {
   return NextResponse.json(data, { status });
+}
+
+/** --------- עזרים לקבצים / סקפולד ובטיחות --------- */
+
+/** מפחית JSON של קבצים לצורה שטוחה path -> content */
+type FilesMap = Record<string, string>;
+function flattenFiles(input: any, prefix = ""): FilesMap {
+  const out: FilesMap = {};
+  if (!input) return out;
+
+  // אם זה כבר מיפוי שטוח של path->string
+  if (typeof input === "object" && !Array.isArray(input)) {
+    let looksFlat = true;
+    for (const v of Object.values(input)) {
+      if (v && typeof v === "object") {
+        looksFlat = false;
+        break;
+      }
+    }
+    if (looksFlat) return input as FilesMap;
+  }
+
+  // טיפול באובייקט מקונן או באייטמים עם { content }
+  for (const [k, v] of Object.entries(input)) {
+    const path = prefix ? `${prefix}/${k}` : k;
+    if (v && typeof v === "object" && !("content" in (v as any))) {
+      Object.assign(out, flattenFiles(v, path));
+    } else {
+      out[path] = typeof v === "string" ? v : (v as any)?.content ?? "";
+    }
+  }
+  return out;
+}
+
+/** *** שינוי חשוב: ניקוי package.json כדי למנוע נפילת build על Prisma ולמנוע כפיית React 19 */
+function sanitizePackageJson(src: string): string {
+  try {
+    const pkg = JSON.parse(src);
+
+    // 1) מסיר סקריפט postinstall שרץ prisma generate
+    if (
+      pkg.scripts?.postinstall &&
+      /prisma\s+generate/.test(pkg.scripts.postinstall)
+    ) {
+      delete pkg.scripts.postinstall;
+    }
+
+    // 2) מסיר תלות ב-prisma וב-@prisma/client אם יש (לא חובה בקוד שרץ ב-Vercel ללא schema)
+    for (const depField of [
+      "dependencies",
+      "devDependencies",
+      "optionalDependencies",
+    ]) {
+      if (pkg[depField]) {
+        if ("prisma" in pkg[depField]) delete pkg[depField]["prisma"];
+        if ("@prisma/client" in pkg[depField])
+          delete pkg[depField]["@prisma/client"];
+      }
+    }
+
+    // 3) אל נכפה React 19. נשאיר את מה שיש. אם אין בכלל, נשלים ב-scfaffoldIfNeeded.
+    return JSON.stringify(pkg, null, 2);
+  } catch {
+    // במקרה של JSON לא תקין — לא נוגעים
+    return src;
+  }
+}
+
+/** *** שינוי: סקפולד מינימלי שלא כופה React 19 ולא מכניס Prisma */
+function scaffoldIfNeeded(files: FilesMap): FilesMap {
+  const out: FilesMap = { ...files };
+
+  // package.json — אם אין בכלל, נבנה מינימלי ותואם React 18
+  if (!out["package.json"]) {
+    out["package.json"] = JSON.stringify(
+      {
+        name: "published-app",
+        private: true,
+        scripts: { dev: "next dev", build: "next build", start: "next start" },
+        dependencies: {
+          next: "latest",
+          react: "^18.3.1",
+          "react-dom": "^18.3.1",
+        },
+      },
+      null,
+      2
+    );
+  }
+
+  // tsconfig.json — אם חסר, נשלים מינימלי נפוץ
+  if (!out["tsconfig.json"]) {
+    out["tsconfig.json"] = JSON.stringify(
+      {
+        compilerOptions: {
+          target: "ES2022",
+          lib: ["ES2022", "DOM", "DOM.Iterable"],
+          module: "ESNext",
+          moduleResolution: "Bundler",
+          strict: true,
+          jsx: "preserve",
+          baseUrl: ".",
+          paths: { "@/*": ["src/*"] },
+        },
+        include: ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
+        exclude: ["node_modules"],
+      },
+      null,
+      2
+    );
+  }
+
+  // next.config.* — אם חסר, next.config.ts מינימלי
+  if (
+    !out["next.config.mjs"] &&
+    !out["next.config.ts"] &&
+    !out["next.config.js"]
+  ) {
+    out["next.config.ts"] =
+      'import type { NextConfig } from "next";\nconst nextConfig: NextConfig = {};\nexport default nextConfig;\n';
+  }
+
+  // layout.tsx בסיסי אם חסר
+  if (!out["src/app/layout.tsx"] && !out["app/layout.tsx"]) {
+    out[
+      "src/app/layout.tsx"
+    ] = `export default function RootLayout({ children }: { children: React.ReactNode }) {
+  return <html lang="en"><body>{children}</body></html>;
+}`;
+  }
+
+  // page.tsx בסיסי אם חסר
+  if (!out["src/app/page.tsx"] && !out["app/page.tsx"]) {
+    out[
+      "src/app/page.tsx"
+    ] = `export default function Page(){return <h1>Hello from Publish</h1>}`;
+  }
+
+  // *** שינוי: אל תכלול קבצי Prisma בשום מצב בפרסום
+  for (const k of Object.keys(out)) {
+    if (k.startsWith("prisma/") || k.endsWith(".prisma")) {
+      delete out[k];
+    }
+  }
+
+  // *** שינוי: אם יש package.json, ננקה אותו (הסרת postinstall + תלות ב-Prisma, לא לכפות React 19)
+  if (out["package.json"]) {
+    out["package.json"] = sanitizePackageJson(out["package.json"]);
+  }
+
+  return out;
 }
 
 /** אם הרפו ריק – יוצר README וענף base */
@@ -58,104 +210,7 @@ async function ensureBranchExists(
   });
 }
 
-/** מפחית JSON של קבצים לצורה שטוחה path -> content */
-type FilesMap = Record<string, string>;
-function flattenFiles(input: any, prefix = ""): FilesMap {
-  const out: FilesMap = {};
-  if (!input) return out;
-
-  // אם זה כבר מיפוי שטוח של path->string
-  if (typeof input === "object" && !Array.isArray(input)) {
-    let looksFlat = true;
-    for (const v of Object.values(input)) {
-      if (v && typeof v === "object") {
-        looksFlat = false;
-        break;
-      }
-    }
-    if (looksFlat) return input as FilesMap;
-  }
-
-  // טיפול באובייקט מקונן או באייטמים עם { content }
-  for (const [k, v] of Object.entries(input)) {
-    const path = prefix ? `${prefix}/${k}` : k;
-    if (v && typeof v === "object" && !("content" in (v as any))) {
-      Object.assign(out, flattenFiles(v, path));
-    } else {
-      out[path] = typeof v === "string" ? v : (v as any)?.content ?? "";
-    }
-  }
-  return out;
-}
-
-/** משלים קבצי סקפולד מינימליים לפרויקט Next אם חסרים */
-function scaffoldIfNeeded(files: FilesMap): FilesMap {
-  const out: FilesMap = { ...files };
-
-  // package.json
-  if (!out["package.json"]) {
-    out["package.json"] = JSON.stringify(
-      {
-        name: "published-app",
-        private: true,
-        scripts: { dev: "next dev", build: "next build", start: "next start" },
-        dependencies: {
-          next: "15.4.6",
-          react: "19.1.0",
-          "react-dom": "19.1.0",
-        },
-      },
-      null,
-      2
-    );
-  }
-
-  // tsconfig.json
-  if (!out["tsconfig.json"]) {
-    out["tsconfig.json"] = JSON.stringify(
-      {
-        compilerOptions: {
-          target: "ES2022",
-          lib: ["ES2022", "DOM", "DOM.Iterable"],
-          module: "ESNext",
-          moduleResolution: "Bundler",
-          strict: true,
-          jsx: "preserve",
-          baseUrl: ".",
-          paths: { "@/*": ["src/*"] },
-        },
-        include: ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
-        exclude: ["node_modules"],
-      },
-      null,
-      2
-    );
-  }
-
-  // next.config.ts
-  if (!out["next.config.ts"]) {
-    out["next.config.ts"] =
-      'import type { NextConfig } from "next";\nconst nextConfig: NextConfig = {};\nexport default nextConfig;\n';
-  }
-
-  // layout.tsx
-  if (!out["src/app/layout.tsx"]) {
-    out[
-      "src/app/layout.tsx"
-    ] = `export default function RootLayout({ children }: { children: React.ReactNode }) {
-  return <html lang="en"><body>{children}</body></html>;
-}`;
-  }
-
-  // page.tsx בסיסי אם אין
-  if (!out["src/app/page.tsx"] && !out["app/page.tsx"]) {
-    out[
-      "src/app/page.tsx"
-    ] = `export default function Page(){return <h1>Hello from Publish</h1>}`;
-  }
-
-  return out;
-}
+/** --------- ה-Handler הראשי --------- */
 
 export async function POST(req: NextRequest) {
   try {
@@ -224,7 +279,6 @@ export async function POST(req: NextRequest) {
       }
 
       files = flattenFiles(lastFragment.files);
-      files = scaffoldIfNeeded(files);
     }
 
     // 4) הגנה: חייבים קבצים
@@ -236,6 +290,13 @@ export async function POST(req: NextRequest) {
         },
         400
       );
+    }
+
+    // *** שינוי: ניקוי/השלמה לפני שליחה ל-GitHub
+    files = scaffoldIfNeeded(files); // משלים חסרים ומוחק Prisma
+    if (files["package.json"]) {
+      // דואג להסרת postinstall ותלות Prisma
+      files["package.json"] = sanitizePackageJson(files["package.json"]);
     }
 
     // 5) GitHub App – Octokit של ההתקנה
@@ -262,6 +323,8 @@ export async function POST(req: NextRequest) {
     );
     const baseSha: string = baseRef.object.sha;
 
+    // טיפ: אם לא רוצים "מלא דפלויים", אפשר למחזר ענף קבוע, למשל "publish/app"
+    // כאן אנחנו יוצרים ענף חדש כל פעם:
     const branchName = `publish/${Date.now()}`;
     await octo.request("POST /repos/{owner}/{repo}/git/refs", {
       owner,
