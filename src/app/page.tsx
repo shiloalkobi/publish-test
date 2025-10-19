@@ -1,1 +1,3 @@
-export default function Page(){return <main style={{padding:24}}><h1>App</h1></main>}
+export default function Page() {
+  return <h1>Hello from Publish</h1>;
+}
