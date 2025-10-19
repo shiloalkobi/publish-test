@@ -2,13 +2,123 @@
 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { MailIcon, RocketIcon, StarIcon, ShieldIcon, PhoneIcon } from "lucide-react";
+import { Card } from "@/components/ui/card";
+import { MailIcon, PhoneIcon, CheckCircleIcon } from "lucide-react";
 import { useState } from "react";
 
-export default function LandingPage() {
-  const [form, setForm] = useState({ name: "", email: "", message: "" });
+function Navbar() {
+  return (
+    <nav className="w-full bg-blue-700 text-white py-4 px-6 flex justify-between items-center shadow">
+      <div className="font-bold text-xl tracking-tight">BlueSite</div>
+      <div className="space-x-6 hidden md:flex">
+        <a href="#features" className="hover:underline">Features</a>
+        <a href="#pricing" className="hover:underline">Pricing</a>
+        <a href="#contact" className="hover:underline">Contact</a>
+      </div>
+      <Button variant="outline" className="border-white text-white hover:bg-blue-600 hover:text-white hidden md:inline-block">Sign Up</Button>
+      <button className="md:hidden ml-4" aria-label="Open menu">
+        <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-menu"><line x1="4" y1="12" x2="20" y2="12"/><line x1="4" y1="6" x2="20" y2="6"/><line x1="4" y1="18" x2="20" y2="18"/></svg>
+      </button>
+    </nav>
+  );
+}
+
+function Hero() {
+  return (
+    <section className="w-full bg-blue-600 text-white py-20 px-6 flex flex-col items-center text-center">
+      <h1 className="text-4xl md:text-5xl font-extrabold mb-4">Welcome to BlueSite</h1>
+      <p className="text-lg md:text-xl mb-8 max-w-xl">A modern, beautiful landing page template built with Next.js, Shadcn UI, and Tailwind CSS. Launch your next project with style!</p>
+      <div className="flex flex-col sm:flex-row gap-4 justify-center">
+        <Button className="bg-white text-blue-700 font-bold hover:bg-blue-100">Get Started</Button>
+        <Button variant="outline" className="border-white text-white hover:bg-blue-700 hover:text-white">Learn More</Button>
+      </div>
+    </section>
+  );
+}
+
+function Features() {
+  const features = [
+    {
+      icon: <CheckCircleIcon className="w-8 h-8 text-blue-600" />, 
+      title: "Easy to Use",
+      desc: "Intuitive and simple interface for everyone.",
+    },
+    {
+      icon: <CheckCircleIcon className="w-8 h-8 text-blue-600" />, 
+      title: "Responsive Design",
+      desc: "Looks great on all devices, big or small.",
+    },
+    {
+      icon: <CheckCircleIcon className="w-8 h-8 text-blue-600" />, 
+      title: "Customizable",
+      desc: "Easily adapt to your brand and needs.",
+    },
+  ];
+  return (
+    <section id="features" className="py-20 px-6 bg-white w-full">
+      <div className="max-w-5xl mx-auto">
+        <h2 className="text-3xl font-bold text-center mb-10 text-blue-700">Features</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {features.map((f, i) => (
+            <Card key={i} className="flex flex-col items-center p-8 shadow hover:shadow-lg transition-shadow">
+              {f.icon}
+              <h3 className="mt-4 text-xl font-semibold text-blue-700">{f.title}</h3>
+              <p className="mt-2 text-gray-600 text-center">{f.desc}</p>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Pricing() {
+  const plans = [
+    {
+      name: "Starter",
+      price: "$0",
+      features: ["1 Project", "Community Support", "Basic Analytics"],
+      highlight: false,
+    },
+    {
+      name: "Pro",
+      price: "$19/mo",
+      features: ["Unlimited Projects", "Priority Support", "Advanced Analytics"],
+      highlight: true,
+    },
+    {
+      name: "Enterprise",
+      price: "Contact Us",
+      features: ["Custom Solutions", "Dedicated Manager", "24/7 Support"],
+      highlight: false,
+    },
+  ];
+  return (
+    <section id="pricing" className="py-20 px-6 bg-blue-50 w-full">
+      <div className="max-w-5xl mx-auto">
+        <h2 className="text-3xl font-bold text-center mb-10 text-blue-700">Pricing</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {plans.map((plan, i) => (
+            <Card key={i} className={`flex flex-col items-center p-8 shadow-lg border-2 ${plan.highlight ? "border-blue-700" : "border-transparent"} bg-white`}>
+              <h3 className="text-xl font-semibold text-blue-700 mb-2">{plan.name}</h3>
+              <div className="text-3xl font-bold mb-4">{plan.price}</div>
+              <ul className="mb-6 space-y-2">
+                {plan.features.map((f, j) => (
+                  <li key={j} className="flex items-center gap-2 text-gray-700"><CheckCircleIcon className="w-4 h-4 text-blue-600" /> {f}</li>
+                ))}
+              </ul>
+              <Button className={plan.highlight ? "bg-blue-700 text-white hover:bg-blue-800" : "bg-blue-100 text-blue-700 hover:bg-blue-200"}>{plan.highlight ? "Get Pro" : "Choose"}</Button>
+            </Card>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function Contact() {
   const [submitted, setSubmitted] = useState(false);
+  const [form, setForm] = useState({ name: "", email: "", message: "" });
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -18,175 +128,83 @@ export default function LandingPage() {
     e.preventDefault();
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 3000);
-    setForm({ name: "", email: "", message: "" });
   }
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-blue-700 via-blue-500 to-red-400">
-      {/* Navbar */}
-      <nav className="w-full px-6 py-4 flex items-center justify-between bg-gradient-to-r from-blue-700 to-red-500 shadow-md">
-        <div className="flex items-center gap-2">
-          <RocketIcon className="text-white w-7 h-7" />
-          <span className="text-2xl font-bold text-white tracking-tight">RedBlue</span>
-        </div>
-        <div className="flex gap-4">
-          <a href="#features" className="text-white hover:text-blue-100 font-medium transition">Features</a>
-          <a href="#pricing" className="text-white hover:text-blue-100 font-medium transition">Pricing</a>
-          <a href="#contact" className="text-white hover:text-blue-100 font-medium transition">Contact</a>
-        </div>
-        <Button variant="outline" className="border-white text-white hover:bg-white hover:text-blue-700">Sign Up</Button>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="flex flex-col md:flex-row items-center justify-between px-6 md:px-20 py-16 gap-10">
-        <div className="flex-1">
-          <h1 className="text-4xl md:text-6xl font-extrabold text-white mb-6 drop-shadow-lg">
-            Ignite Your Business <span className="text-red-300">with Red & Blue</span>
-          </h1>
-          <p className="text-lg md:text-2xl text-blue-100 mb-8 max-w-xl">
-            Experience the power of innovation and reliability. Our platform blends bold creativity with trusted performance to help you reach new heights.
-          </p>
-          <Button size="lg" className="bg-red-500 hover:bg-blue-700 text-white font-bold px-8 py-4 rounded-lg shadow-lg transition">Get Started</Button>
-        </div>
-        <div className="flex-1 flex items-center justify-center">
-          <div className="w-64 h-64 rounded-full bg-gradient-to-tr from-blue-500 via-white to-red-400 flex items-center justify-center shadow-2xl">
-            <RocketIcon className="w-32 h-32 text-blue-700" />
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section id="features" className="py-16 px-6 md:px-20 bg-gradient-to-r from-blue-800 via-blue-600 to-red-400">
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-10 text-center">Features</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          <Card className="bg-white/90 shadow-lg">
-            <CardHeader>
-              <StarIcon className="w-8 h-8 text-blue-600 mb-2" />
-              <CardTitle className="text-blue-700">Outstanding Performance</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-blue-900">Lightning-fast speeds and seamless experience, powered by cutting-edge technology.</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/90 shadow-lg">
-            <CardHeader>
-              <ShieldIcon className="w-8 h-8 text-red-500 mb-2" />
-              <CardTitle className="text-red-600">Secure & Reliable</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-blue-900">Your data is protected with industry-leading security and 99.99% uptime.</p>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/90 shadow-lg">
-            <CardHeader>
-              <RocketIcon className="w-8 h-8 text-blue-700 mb-2" />
-              <CardTitle className="text-blue-700">Easy to Launch</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <p className="text-blue-900">Get started in minutes with our intuitive onboarding and helpful support.</p>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Pricing Section */}
-      <section id="pricing" className="py-16 px-6 md:px-20 bg-gradient-to-r from-red-500 via-blue-500 to-blue-700">
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-10 text-center">Pricing</h2>
-        <div className="flex flex-col md:flex-row gap-8 justify-center">
-          <Card className="bg-white/90 shadow-xl w-full md:w-80">
-            <CardHeader>
-              <CardTitle className="text-blue-700">Starter</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold text-blue-700 mb-2">$9<span className="text-lg font-normal">/mo</span></div>
-              <ul className="text-blue-900 mb-6 space-y-2">
-                <li>✔️ Basic features</li>
-                <li>✔️ Email support</li>
-                <li>✔️ Secure access</li>
-              </ul>
-              <Button className="w-full bg-blue-700 hover:bg-red-500 text-white">Choose Starter</Button>
-            </CardContent>
-          </Card>
-          <Card className="bg-white/90 shadow-xl w-full md:w-80 border-2 border-red-500">
-            <CardHeader>
-              <CardTitle className="text-red-600">Pro</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-4xl font-bold text-red-600 mb-2">$29<span className="text-lg font-normal">/mo</span></div>
-              <ul className="text-blue-900 mb-6 space-y-2">
-                <li>✔️ All Starter features</li>
-                <li>✔️ Priority support</li>
-                <li>✔️ Advanced analytics</li>
-              </ul>
-              <Button className="w-full bg-red-500 hover:bg-blue-700 text-white">Choose Pro</Button>
-            </CardContent>
-          </Card>
-        </div>
-      </section>
-
-      {/* Contact Section */}
-      <section id="contact" className="py-16 px-6 md:px-20 bg-gradient-to-r from-blue-700 via-blue-500 to-red-400">
-        <h2 className="text-3xl md:text-4xl font-bold text-white mb-10 text-center">Contact Us</h2>
-        <div className="max-w-2xl mx-auto bg-white/90 rounded-lg shadow-lg p-8">
+    <section id="contact" className="py-20 px-6 bg-white w-full">
+      <div className="max-w-xl mx-auto">
+        <h2 className="text-3xl font-bold text-center mb-10 text-blue-700">Contact Us</h2>
+        <Card className="p-8 shadow-lg">
           {submitted ? (
-            <div className="text-center text-blue-700 font-semibold text-xl py-8">
-              Thank you for reaching out! We'll get back to you soon.
+            <div className="flex flex-col items-center text-blue-700">
+              <CheckCircleIcon className="w-12 h-12 mb-2" />
+              <div className="text-lg font-semibold">Thank you for reaching out!</div>
+              <div>We'll get back to you soon.</div>
             </div>
           ) : (
-            <form className="space-y-6" onSubmit={handleSubmit}>
-              <div>
-                <label htmlFor="name" className="block text-blue-900 font-medium mb-1">Name</label>
-                <Input
-                  id="name"
-                  name="name"
-                  value={form.name}
-                  onChange={handleChange}
-                  required
-                  className="bg-white border-blue-300 focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="email" className="block text-blue-900 font-medium mb-1">Email</label>
-                <Input
-                  id="email"
-                  name="email"
-                  type="email"
-                  value={form.email}
-                  onChange={handleChange}
-                  required
-                  className="bg-white border-blue-300 focus:border-blue-500"
-                />
-              </div>
-              <div>
-                <label htmlFor="message" className="block text-blue-900 font-medium mb-1">Message</label>
-                <textarea
-                  id="message"
-                  name="message"
-                  value={form.message}
-                  onChange={handleChange}
-                  required
-                  rows={4}
-                  className="w-full rounded-md border border-blue-300 focus:border-blue-500 px-3 py-2 bg-white text-blue-900"
-                />
-              </div>
-              <Button type="submit" className="bg-blue-700 hover:bg-red-500 text-white w-full">Send Message</Button>
+            <form className="flex flex-col gap-4" onSubmit={handleSubmit}>
+              <Input
+                name="name"
+                placeholder="Your Name"
+                value={form.name}
+                onChange={handleChange}
+                required
+                className="bg-blue-50"
+              />
+              <Input
+                name="email"
+                type="email"
+                placeholder="Your Email"
+                value={form.email}
+                onChange={handleChange}
+                required
+                className="bg-blue-50"
+              />
+              <textarea
+                name="message"
+                placeholder="Your Message"
+                value={form.message}
+                onChange={handleChange}
+                required
+                className="bg-blue-50 rounded px-3 py-2 min-h-[100px]"
+              />
+              <Button type="submit" className="bg-blue-700 text-white hover:bg-blue-800">Send Message</Button>
             </form>
           )}
+        </Card>
+        <div className="flex flex-col sm:flex-row gap-6 mt-8 justify-center text-blue-700">
+          <div className="flex items-center gap-2"><MailIcon className="w-5 h-5" /> contact@bluesite.com</div>
+          <div className="flex items-center gap-2"><PhoneIcon className="w-5 h-5" /> +1 234 567 8901</div>
         </div>
-      </section>
+      </div>
+    </section>
+  );
+}
 
-      {/* Footer */}
-      <footer className="w-full py-6 px-6 md:px-20 bg-gradient-to-r from-blue-800 to-red-500 text-white flex flex-col md:flex-row items-center justify-between gap-4">
-        <div className="flex items-center gap-2">
-          <RocketIcon className="w-5 h-5" />
-          <span className="font-semibold">RedBlue</span>
+function Footer() {
+  return (
+    <footer className="w-full bg-blue-700 text-white py-6 px-6 text-center mt-12">
+      <div className="max-w-5xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>&copy; {new Date().getFullYear()} BlueSite. All rights reserved.</div>
+        <div className="space-x-4">
+          <a href="#features" className="hover:underline">Features</a>
+          <a href="#pricing" className="hover:underline">Pricing</a>
+          <a href="#contact" className="hover:underline">Contact</a>
         </div>
-        <div className="flex gap-4">
-          <a href="mailto:info@redblue.com" className="flex items-center gap-1 hover:underline"><MailIcon className="w-4 h-4" /> info@redblue.com</a>
-          <a href="tel:+1234567890" className="flex items-center gap-1 hover:underline"><PhoneIcon className="w-4 h-4" /> +1 234 567 890</a>
-        </div>
-        <span className="text-sm">© {new Date().getFullYear()} RedBlue. All rights reserved.</span>
-      </footer>
+      </div>
+    </footer>
+  );
+}
+
+export default function Page() {
+  return (
+    <div className="flex flex-col min-h-screen bg-white">
+      <Navbar />
+      <Hero />
+      <Features />
+      <Pricing />
+      <Contact />
+      <Footer />
     </div>
   );
 }
