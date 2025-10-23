@@ -3,116 +3,116 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
-import { MailIcon, CheckCircleIcon, StarIcon } from "lucide-react";
-import { useState } from "react";
+import { cn } from "@/lib/utils";
+import { CheckCircle, Leaf, Rocket, Mail } from "lucide-react";
+import Link from "next/link";
+import React from "react";
 
 function Navbar() {
   return (
-    <nav className="w-full bg-orange-500 text-white py-4 px-6 flex items-center justify-between shadow-md">
-      <div className="flex items-center gap-2 text-2xl font-bold">
-        <span className="text-white">🍊</span>
-        <span>OrangeSite</span>
+    <nav className="w-full bg-gradient-to-r from-orange-500 to-green-500 py-4 px-6 flex items-center justify-between shadow-md">
+      <div className="flex items-center gap-2">
+        <span className="text-2xl font-bold text-white">🍊 GreenOrange</span>
       </div>
-      <div className="hidden md:flex gap-8 text-lg">
-        <a href="#features" className="hover:underline">Features</a>
-        <a href="#pricing" className="hover:underline">Pricing</a>
-        <a href="#contact" className="hover:underline">Contact</a>
+      <div className="hidden md:flex gap-6">
+        <Link href="#features" className="text-white font-medium hover:underline">Features</Link>
+        <Link href="#pricing" className="text-white font-medium hover:underline">Pricing</Link>
+        <Link href="#contact" className="text-white font-medium hover:underline">Contact</Link>
       </div>
-      <Button variant="outline" className="border-white text-white hover:bg-white hover:text-orange-500 transition">Sign Up</Button>
+      <Button className="bg-white text-orange-600 hover:bg-orange-100 font-semibold">Sign Up</Button>
     </nav>
   );
 }
 
 function Hero() {
   return (
-    <section className="bg-gradient-to-b from-orange-500 to-orange-400 text-white py-20 px-4 text-center flex flex-col items-center justify-center">
-      <h1 className="text-4xl md:text-6xl font-extrabold mb-4">Welcome to OrangeSite 🍊</h1>
-      <p className="text-lg md:text-2xl mb-8 max-w-xl mx-auto">The freshest way to launch your next project. Fast, beautiful, and bursting with features.</p>
-      <Button className="bg-white text-orange-500 font-bold px-8 py-4 text-lg hover:bg-orange-100 transition">Get Started</Button>
+    <section className="w-full bg-gradient-to-br from-orange-50 to-green-50 py-20 px-4 flex flex-col items-center text-center">
+      <h1 className="text-4xl md:text-6xl font-extrabold text-orange-600 mb-4">Grow Your Success with GreenOrange</h1>
+      <p className="text-lg md:text-2xl text-green-700 mb-8 max-w-2xl">Empowering your business with eco-friendly, innovative solutions. Join us to make your workflow more vibrant and sustainable.</p>
+      <Button size="lg" className="bg-gradient-to-r from-orange-500 to-green-500 text-white font-bold text-lg px-8 py-6 shadow-lg hover:from-orange-600 hover:to-green-600">Get Started</Button>
     </section>
   );
 }
 
-function Features() {
-  const features = [
-    {
-      icon: <CheckCircleIcon className="w-8 h-8 text-orange-500" />,
-      title: "Easy to Use",
-      desc: "Intuitive design and simple setup so you can focus on what matters.",
-    },
-    {
-      icon: <StarIcon className="w-8 h-8 text-orange-500" />,
-      title: "Modern UI",
-      desc: "Sleek, responsive, and accessible. Looks great everywhere.",
-    },
-    {
-      icon: <MailIcon className="w-8 h-8 text-orange-500" />,
-      title: "Support Included",
-      desc: "We’re here to help you every step of the way.",
-    },
-  ];
+function FeatureCard({ icon, title, description, color }: { icon: React.ReactNode; title: string; description: string; color: string }) {
   return (
-    <section id="features" className="bg-white py-16 px-4">
+    <Card className="flex flex-col items-center p-6 bg-white shadow-md border-0">
+      <div className={cn("rounded-full p-4 mb-4", color)}>{icon}</div>
+      <h3 className="text-xl font-bold mb-2 text-orange-700">{title}</h3>
+      <p className="text-gray-600 text-center">{description}</p>
+    </Card>
+  );
+}
+
+function Features() {
+  return (
+    <section id="features" className="py-20 px-4 bg-white">
       <div className="max-w-5xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-orange-500 text-center mb-12">Features</h2>
+        <h2 className="text-3xl md:text-4xl font-extrabold text-green-600 mb-10 text-center">Features</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {features.map((f, i) => (
-            <Card key={i} className="flex flex-col items-center p-8 shadow hover:shadow-lg transition border-2 border-orange-100">
-              <div className="mb-4">{f.icon}</div>
-              <h3 className="text-xl font-semibold mb-2 text-orange-500">{f.title}</h3>
-              <p className="text-gray-700 text-center">{f.desc}</p>
-            </Card>
-          ))}
+          <FeatureCard
+            icon={<Rocket className="w-8 h-8 text-orange-500" />}
+            title="Fast & Efficient"
+            description="Experience blazing fast performance and seamless workflows."
+            color="bg-orange-100"
+          />
+          <FeatureCard
+            icon={<Leaf className="w-8 h-8 text-green-600" />}
+            title="Eco-Friendly"
+            description="Built with sustainability in mind for a greener future."
+            color="bg-green-100"
+          />
+          <FeatureCard
+            icon={<CheckCircle className="w-8 h-8 text-green-500" />}
+            title="Reliable Support"
+            description="Our team is here to help you every step of the way."
+            color="bg-orange-100"
+          />
         </div>
       </div>
     </section>
   );
 }
 
-function Pricing() {
-  const plans = [
-    {
-      name: "Starter",
-      price: "$0",
-      features: ["Basic Features", "Email Support", "Community Access"],
-      highlight: false,
-    },
-    {
-      name: "Pro",
-      price: "$19/mo",
-      features: ["All Starter Features", "Priority Support", "Advanced Analytics"],
-      highlight: true,
-    },
-    {
-      name: "Enterprise",
-      price: "Contact Us",
-      features: ["All Pro Features", "Custom Solutions", "Dedicated Manager"],
-      highlight: false,
-    },
-  ];
+function PricingCard({ plan, price, features, highlight }: { plan: string; price: string; features: string[]; highlight?: boolean }) {
   return (
-    <section id="pricing" className="bg-orange-50 py-16 px-4">
+    <Card className={cn("flex flex-col items-center p-8 border-2", highlight ? "border-green-500 shadow-lg" : "border-orange-200") }>
+      <h3 className={cn("text-2xl font-bold mb-2", highlight ? "text-green-600" : "text-orange-600")}>{plan}</h3>
+      <div className="text-4xl font-extrabold mb-4">{price}</div>
+      <ul className="mb-6 space-y-2">
+        {features.map((f, i) => (
+          <li key={i} className="flex items-center gap-2 text-gray-700">
+            <CheckCircle className="w-4 h-4 text-green-500" /> {f}
+          </li>
+        ))}
+      </ul>
+      <Button className={cn("w-full font-semibold", highlight ? "bg-green-500 hover:bg-green-600 text-white" : "bg-orange-500 hover:bg-orange-600 text-white")}>Choose Plan</Button>
+    </Card>
+  );
+}
+
+function Pricing() {
+  return (
+    <section id="pricing" className="py-20 px-4 bg-gradient-to-br from-orange-50 to-green-50">
       <div className="max-w-5xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-orange-500 text-center mb-12">Pricing</h2>
+        <h2 className="text-3xl md:text-4xl font-extrabold text-orange-600 mb-10 text-center">Pricing</h2>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {plans.map((plan, i) => (
-            <Card
-              key={i}
-              className={`flex flex-col items-center p-8 border-2 ${plan.highlight ? "border-orange-500 shadow-lg" : "border-orange-100"} bg-white`}
-            >
-              <h3 className="text-2xl font-bold mb-2 text-orange-500">{plan.name}</h3>
-              <div className="text-3xl font-extrabold mb-4">{plan.price}</div>
-              <ul className="mb-6 space-y-2">
-                {plan.features.map((f, j) => (
-                  <li key={j} className="flex items-center gap-2 text-gray-700">
-                    <CheckCircleIcon className="w-5 h-5 text-orange-400" />
-                    {f}
-                  </li>
-                ))}
-              </ul>
-              <Button className={`w-full ${plan.highlight ? "bg-orange-500 text-white hover:bg-orange-600" : "bg-orange-100 text-orange-500 hover:bg-orange-200"}`}>{plan.highlight ? "Get Pro" : "Choose"}</Button>
-            </Card>
-          ))}
+          <PricingCard
+            plan="Starter"
+            price="$9/mo"
+            features={["Basic analytics", "Email support", "Eco dashboard"]}
+          />
+          <PricingCard
+            plan="Pro"
+            price="$29/mo"
+            features={["All Starter features", "Priority support", "Advanced insights"]}
+            highlight
+          />
+          <PricingCard
+            plan="Enterprise"
+            price="Contact us"
+            features={["Custom solutions", "Dedicated manager", "Full analytics"]}
+          />
         </div>
       </div>
     </section>
@@ -120,44 +120,24 @@ function Pricing() {
 }
 
 function Contact() {
-  const [email, setEmail] = useState("");
-  const [message, setMessage] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setSubmitted(true);
-  }
-
   return (
-    <section id="contact" className="bg-white py-16 px-4">
+    <section id="contact" className="py-20 px-4 bg-white">
       <div className="max-w-xl mx-auto">
-        <h2 className="text-3xl md:text-4xl font-bold text-orange-500 text-center mb-8">Contact Us</h2>
-        <form onSubmit={handleSubmit} className="bg-orange-50 rounded-lg shadow p-8 flex flex-col gap-4">
-          <label className="text-orange-500 font-semibold">Email</label>
-          <Input
-            type="email"
-            required
-            value={email}
-            onChange={e => setEmail(e.target.value)}
-            placeholder="you@email.com"
-            className="bg-white border-orange-200 focus:border-orange-400"
-          />
-          <label className="text-orange-500 font-semibold">Message</label>
-          <textarea
-            required
-            value={message}
-            onChange={e => setMessage(e.target.value)}
-            placeholder="How can we help you?"
-            className="bg-white border border-orange-200 rounded px-3 py-2 min-h-[100px] focus:border-orange-400 outline-none"
-          />
-          <Button type="submit" className="bg-orange-500 text-white hover:bg-orange-600 mt-4">Send Message</Button>
-          {submitted && (
-            <div className="text-green-600 font-semibold flex items-center gap-2 mt-2">
-              <CheckCircleIcon className="w-5 h-5" />
-              Thank you! We'll be in touch.
-            </div>
-          )}
+        <h2 className="text-3xl md:text-4xl font-extrabold text-green-600 mb-6 text-center">Contact Us</h2>
+        <form className="bg-gradient-to-r from-orange-50 to-green-50 rounded-xl shadow-md p-8 flex flex-col gap-4">
+          <div>
+            <label htmlFor="name" className="block text-orange-700 font-semibold mb-1">Name</label>
+            <Input id="name" name="name" placeholder="Your Name" required className="bg-white" />
+          </div>
+          <div>
+            <label htmlFor="email" className="block text-orange-700 font-semibold mb-1">Email</label>
+            <Input id="email" name="email" type="email" placeholder="you@email.com" required className="bg-white" />
+          </div>
+          <div>
+            <label htmlFor="message" className="block text-orange-700 font-semibold mb-1">Message</label>
+            <textarea id="message" name="message" required rows={4} className="w-full rounded-md border border-orange-200 bg-white px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-400" placeholder="How can we help?" />
+          </div>
+          <Button type="submit" className="bg-gradient-to-r from-orange-500 to-green-500 text-white font-bold">Send Message</Button>
         </form>
       </div>
     </section>
@@ -166,16 +146,22 @@ function Contact() {
 
 function Footer() {
   return (
-    <footer className="bg-orange-500 text-white py-6 px-4 text-center mt-12">
-      <div className="flex flex-col md:flex-row items-center justify-between max-w-5xl mx-auto gap-2">
-        <span className="font-bold">OrangeSite © {new Date().getFullYear()}</span>
-        <span className="text-sm">Made with 🍊 and Next.js</span>
+    <footer className="w-full bg-gradient-to-r from-green-500 to-orange-500 py-6 px-4 mt-12">
+      <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between text-white">
+        <div className="flex items-center gap-2 mb-2 md:mb-0">
+          <span className="text-xl font-bold">🍊 GreenOrange</span>
+        </div>
+        <div className="text-sm">&copy; {new Date().getFullYear()} GreenOrange. All rights reserved.</div>
+        <div className="flex gap-4">
+          <Link href="#" className="hover:underline">Privacy</Link>
+          <Link href="#" className="hover:underline">Terms</Link>
+        </div>
       </div>
     </footer>
   );
 }
 
-export default function Page() {
+export default function LandingPage() {
   return (
     <div className="min-h-screen flex flex-col bg-white">
       <Navbar />
